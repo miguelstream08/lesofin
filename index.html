@@ -34,7 +34,10 @@
   window._fbDb   = db;
   window._fbFns  = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, doc, setDoc, getDoc, collection, query, where, onSnapshot, deleteDoc };
   window._fbReady = true;
-  document.dispatchEvent(new Event('firebase-ready'));
+  // Dispatch after a tick so main script listeners are registered
+  Promise.resolve().then(() => {
+    document.dispatchEvent(new Event('firebase-ready'));
+  });
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&display=swap" rel="stylesheet">
@@ -954,13 +957,7 @@ body{overflow-x:hidden;}
           <div class="ms-header">
             <div class="ms-title">Movimientos</div>
             <div style="display:flex;gap:8px;align-items:center;">
-              <select id="mes-gl" onchange="renderAll()" class="filter-select" style="font-size:11px;padding:5px 10px;">
-                <option value="0">Enero 2026</option><option value="1">Febrero</option>
-                <option value="2">Marzo</option><option value="3" selected>Abril</option>
-                <option value="4">Mayo</option><option value="5">Junio</option>
-                <option value="6">Julio</option><option value="7">Agosto</option>
-                <option value="8">Septiembre</option><option value="9">Octubre</option>
-                <option value="10">Noviembre</option><option value="11">Diciembre</option>
+              <select id="mes-gl" onchange="renderAll()" class="filter-select" style="font-size:11px;padding:5px 10px;" id="mes-gl">
               </select>
               <button class="btn btn-primary btn-sm" onclick="openModal('modal-new-tx')">+ Nuevo</button>
             </div>
@@ -1793,6 +1790,7 @@ async function saveData() {
 
   // 1. Always save locally (instant, works offline)
   uSet('data', userData);
+  console.log('[LESOFIN] Local save OK. txs:', (userData.txs||[]).length, 'cards:', (userData.cards||[]).length);
 
   // 2. Sync to Firestore if connected
   if (_db && FB.setDoc && FB.doc && currentUid !== 'local') {
@@ -1819,7 +1817,7 @@ async function saveData() {
         })
       ]);
     } catch (e) {
-      console.warn('Firestore write failed, using local cache:', e.code || e.message);
+      console.error('Firestore write failed:', e.code, e.message);
     }
   }
 }
@@ -1848,7 +1846,7 @@ async function loadData() {
         return;
       }
     } catch (e) {
-      console.warn('Firestore read failed, using local cache:', e.code || e.message);
+      console.error('Firestore read failed:', e.code, e.message);
     }
   }
 
@@ -1860,6 +1858,13 @@ async function loadData() {
 // ── HELPERS ───────────────────────────────────────────
 function fmt(n) { return '$' + Math.round(n || 0).toLocaleString('es-MX'); }
 function getM() { return parseInt(document.getElementById('mes-gl')?.value || '3'); }
+function getSelectedYear() {
+  const sel = document.getElementById('mes-gl');
+  if (!sel) return new Date().getFullYear();
+  const opt = sel.options[sel.selectedIndex];
+  return parseInt(opt?.dataset?.year || new Date().getFullYear());
+}
+
 function txForM(m, y) {
   return (userData.txs || []).filter(t => {
     const p = (t.date || '').split('/');
@@ -1930,44 +1935,35 @@ function compressImage(file, maxPx, quality, cb) {
 
 // ── FIREBASE AUTH ─────────────────────────────────────
 function initFirebase() {
-  // Wait for the module script to expose firebase
-  const tryConnect = () => {
+  function connectFB() {
+    _auth = window._fbAuth;
+    _db   = window._fbDb;
+    const fns = window._fbFns || {};
+    FB = {
+      signIn:        fns.signInWithEmailAndPassword,
+      signOut:       fns.signOut,
+      createUser:    fns.createUserWithEmailAndPassword,
+      onAuthChanged: fns.onAuthStateChanged,
+      updateProfile: fns.updateProfile,
+      setDoc:        fns.setDoc,
+      getDoc:        fns.getDoc,
+      doc:           fns.doc
+    };
+    startAuthListener();
+  }
+  // Poll every 50ms until Firebase module is ready (max 5s)
+  let attempts = 0;
+  const poll = setInterval(() => {
+    attempts++;
     if (window._fbReady) {
-      _auth = window._fbAuth;
-      _db   = window._fbDb;
-      const fns = window._fbFns || {};
-      FB = {
-        signIn:        fns.signInWithEmailAndPassword,
-        signOut:       fns.signOut,
-        createUser:    fns.createUserWithEmailAndPassword,
-        onAuthChanged: fns.onAuthStateChanged,
-        updateProfile: fns.updateProfile,
-        setDoc:        fns.setDoc,
-        getDoc:        fns.getDoc,
-        doc:           fns.doc
-      };
-      startAuthListener();
-    } else {
-      document.addEventListener('firebase-ready', () => {
-        _auth = window._fbAuth;
-        _db   = window._fbDb;
-        const fns = window._fbFns || {};
-        FB = {
-          signIn:        fns.signInWithEmailAndPassword,
-          signOut:       fns.signOut,
-          createUser:    fns.createUserWithEmailAndPassword,
-          onAuthChanged: fns.onAuthStateChanged,
-          updateProfile: fns.updateProfile,
-          setDoc:        fns.setDoc,
-          getDoc:        fns.getDoc,
-          doc:           fns.doc
-        };
-        startAuthListener();
-      }, { once: true });
+      clearInterval(poll);
+      connectFB();
+    } else if (attempts > 100) {
+      clearInterval(poll);
+      console.warn('Firebase not available, using local mode');
+      startAuthListener(); // will use local fallback
     }
-  };
-  // Small delay to let module script execute
-  setTimeout(tryConnect, 100);
+  }, 50);
 }
 
 function startAuthListener() {
@@ -2245,14 +2241,15 @@ async function addTx() {
     toast('✓ Movimiento registrado');
   }
 
-  await saveData();
+  // Save (async to Firestore, sync to localStorage)
+  saveData(); // Don't await — localStorage is instant, Firestore async in bg
   closeModal('modal-new-tx');
   document.getElementById('m-desc').value = '';
   document.getElementById('m-amt').value  = '';
   const cb = document.getElementById('m-is-tercero');
   if (cb) { cb.checked = false; toggleTerceroSection(false); }
   st('gasto');
-  renderAll();
+  renderAll(); // Render immediately from in-memory userData
 }
 
 function toggleTerceroSection(checked) {
@@ -2371,7 +2368,7 @@ async function addCard() {
     color: newCardColor, gradient: newCardGradient, color2: c2
   };
   userData.cards = [...(userData.cards || []), card];
-  await saveData();
+  saveData();
   closeModal('modal-new-card');
   toast('✓ Tarjeta agregada');
   renderAll();
@@ -2394,7 +2391,7 @@ async function addPerson() {
     phone: document.getElementById('p-phone')?.value || '',
     avatar: null
   }];
-  await saveData();
+  saveData();
   closeModal('modal-new-person');
   toast('✓ Persona agregada');
   renderAll();
@@ -2450,7 +2447,7 @@ async function addTerceroTx() {
   closeModal('modal-new-tercero-tx');
   toast('✓ Cobro registrado');
   renderTerceroTable(selectedPersonId);
-  renderRightPanel(txForM(getM(), 2026));
+  renderRightPanel(txForM(getM(), getSelectedYear()));
 }
 
 function openEditTercero(id) {
@@ -2478,7 +2475,7 @@ async function saveEditTercero() {
   closeModal('modal-edit-tercero');
   toast('✓ Guardado');
   if (selectedPersonId) renderTerceroTable(selectedPersonId);
-  renderRightPanel(txForM(getM(), 2026));
+  renderRightPanel(txForM(getM(), getSelectedYear()));
 }
 async function delTerceroTx(id) {
   if (userData?.cfg?.prefs?.confirm && !confirm('¿Eliminar cobro?')) return;
@@ -2510,7 +2507,7 @@ async function addSub() {
     logo:   subLogoPreviewData || null
   }];
   subLogoPreviewData = null;
-  await saveData();
+  saveData();
   closeModal('modal-new-sub');
   toast('✓ Suscripción guardada');
   renderAll();
@@ -2533,7 +2530,7 @@ async function addReminder() {
     note:   document.getElementById('rem-note')?.value             || '',
     recur:  document.getElementById('rem-recur')?.value            || 'none'
   }];
-  await saveData();
+  saveData();
   closeModal('modal-new-reminder');
   toast('✓ Recordatorio guardado');
   renderAll();
@@ -2924,7 +2921,7 @@ function renderCatBars(list) {
 }
 
 function renderActivity() {
-  const m = getM(), y = 2026;
+  const m = getM(), y = getSelectedYear();
   const search  = (document.getElementById('act-search')?.value||'').toLowerCase();
   const typeF   = document.getElementById('flt-type')?.value  ||'all';
   const cardF   = document.getElementById('flt-card')?.value  ||'all';
@@ -3166,7 +3163,7 @@ function renderCustomColorRows() {
 // ── MASTER RENDER ─────────────────────────────────────
 function renderAll() {
   if (!userData) return;
-  const m = getM(), y = 2026;
+  const m = getM(), y = getSelectedYear();
   const list = txForM(m, y);
   const gp=document.getElementById('greeting-p');
   if(gp) gp.textContent=`${MN[m]} ${y} · León Solís Financial`;
@@ -3209,6 +3206,29 @@ function patchLoginHTML() {
 // ── INIT ─────────────────────────────────────────────
 (function init() {
   patchLoginHTML();
+  // Build month/year selector dynamically
+  (function buildMesGl() {
+    const sel = document.getElementById('mes-gl');
+    if (!sel) return;
+    const now = new Date();
+    const thisYear  = now.getFullYear();
+    const thisMonth = now.getMonth();
+    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    // Show last 12 months + next 2
+    const options = [];
+    for (let offset = -11; offset <= 2; offset++) {
+      let m = thisMonth + offset;
+      let y = thisYear;
+      while (m < 0)  { m += 12; y--; }
+      while (m > 11) { m -= 12; y++; }
+      options.push({ m, y });
+    }
+    sel.innerHTML = options.map(({m, y}) => {
+      const selected = (m === thisMonth && y === thisYear) ? 'selected' : '';
+      return `<option value="${m}" data-year="${y}" ${selected}>${months[m]} ${y}</option>`;
+    }).join('');
+  })();
+
   // Set default dates
   ['m-date','trt-date','rem-date'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = todayISO();
