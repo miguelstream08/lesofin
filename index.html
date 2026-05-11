@@ -61,7 +61,14 @@
   --sh:0 1px 3px rgba(0,0,0,0.07),0 4px 12px rgba(0,0,0,0.05);
   --sh2:0 4px 20px rgba(91,110,232,0.22);
   --r:12px;--rl:16px;--rxl:20px;
+  /* Typography variables */
+  --fw-heading:900;--fw-body:400;--fw-ui:700;--fs-base:13px;
 }
+/* Apply typography variables */
+body{font-size:var(--fs-base);}
+h1,h2,h3,.greeting-text h2,.gb-amount,.kpi-value,.sub-name,.fv-title,.modal-title{font-weight:var(--fw-heading);}
+p,.mov-name,.mov-meta,.sp-label,.kpi-label{font-weight:var(--fw-body);}
+.btn,.tnav,.mob-nav-btn span,.nav-item .nav-label{font-weight:var(--fw-ui);}
 html,body{
   height:100%;font-family:var(--ff);background:var(--bg);color:var(--text);
   overflow-x:hidden;max-width:100vw;
@@ -366,8 +373,14 @@ body{overflow-x:hidden;}
 .kc-amber{background:var(--amber2);color:var(--amber);}
 
 /* QUICK ACTIONS */
-.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
-@media(min-width:600px){.quick-actions{grid-template-columns:repeat(4,1fr);}}
+.quick-actions{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.qa-row-top{display:flex;gap:8px;}
+.qa-row-bottom{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+@media(min-width:600px){
+  .quick-actions{flex-direction:row;flex-wrap:wrap;}
+  .qa-row-top{flex:1;min-width:200px;}
+  .qa-row-bottom{flex:3;grid-template-columns:repeat(3,1fr);}
+}
 .qa-btn{
   display:flex;align-items:center;gap:8px;padding:10px 12px;
   background:white;border-radius:10px;border:1.5px solid var(--gray3);
@@ -471,15 +484,16 @@ body{overflow-x:hidden;}
 /* ══ CARDS VIEW ══ */
 .cards-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px;}
 @media(min-width:600px){.cards-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));}}
-.card-tile{border-radius:var(--rl);padding:20px;min-height:140px;
-  position:relative;overflow:hidden;cursor:pointer;transition:transform 0.15s;
-  box-shadow:var(--sh);}
+.card-tile{border-radius:var(--rl);padding:16px 16px 48px 16px;min-height:130px;
+  position:relative;overflow:hidden;cursor:grab;transition:transform 0.15s;
+  box-shadow:var(--sh);box-sizing:border-box;}
 .card-tile:hover{transform:translateY(-3px);}
-.ct-bank{font-size:11px;font-weight:700;letter-spacing:0.06em;opacity:0.7;
+.ct-bank{font-size:11px;font-weight:700;letter-spacing:0.04em;opacity:0.8;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   text-transform:uppercase;margin-bottom:4px;}
-.ct-balance{font-size:22px;font-weight:900;letter-spacing:-0.02em;margin-top:6px;}
-.ct-bottom{position:absolute;bottom:16px;left:20px;right:20px;}
-.ct-num{font-size:11px;font-weight:500;opacity:0.7;letter-spacing:0.1em;}
+.ct-balance{font-size:22px;font-weight:900;letter-spacing:-0.02em;margin-top:4px;line-height:1.2;}
+.ct-bottom{position:absolute;bottom:12px;left:14px;right:90px;}
+.ct-num{font-size:11px;font-weight:500;opacity:0.7;letter-spacing:0.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ct-meta{display:flex;justify-content:space-between;margin-top:4px;font-size:10px;opacity:0.65;}
 .ct-type-badge{
   position:absolute;top:16px;right:16px;font-size:9px;font-weight:800;
@@ -705,26 +719,41 @@ body{overflow-x:hidden;}
 /* MOBILE BOTTOM NAV */
 .mobile-nav{
   display:none;position:fixed;bottom:0;left:0;right:0;
-  background:white;border-top:1px solid var(--gray3);
-  z-index:200;padding:6px 8px 0;justify-content:space-around;align-items:center;
-  padding-bottom:max(env(safe-area-inset-bottom), 10px);
-  padding-left:max(env(safe-area-inset-left), 4px);
-  padding-right:max(env(safe-area-inset-right), 4px);
+  background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--gray3);
+  z-index:200;
+  padding-top:6px;
+  padding-bottom:max(env(safe-area-inset-bottom,0px), 10px);
+  padding-left:max(env(safe-area-inset-left,0px), 4px);
+  padding-right:max(env(safe-area-inset-right,0px), 4px);
 }
 @media(max-width:768px){.mobile-nav{display:flex!important;}}
-.mobile-nav-inner{display:flex;justify-content:space-around;align-items:center;width:100%;height:50px;gap:2px;}
+.mob-fab{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--blue2,#7B8FF5));
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:white;box-shadow:0 4px 16px rgba(91,110,232,0.45);
+  flex-shrink:0;margin-top:-14px;
+  transition:transform 0.15s, box-shadow 0.15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-fab:active{transform:scale(0.93);box-shadow:0 2px 8px rgba(91,110,232,0.3);}
+.mobile-nav-inner{display:flex;justify-content:space-around;align-items:center;width:100%;height:52px;gap:0;padding:0 2px;}
 @media(max-width:768px){
   .main{padding-bottom:calc(72px + max(env(safe-area-inset-bottom),8px));}
   body{padding-bottom:env(safe-area-inset-bottom);}
 }
 .mob-nav-btn{
   display:flex;flex-direction:column;align-items:center;gap:2px;
-  padding:4px 8px;border-radius:8px;border:none;background:transparent;
+  padding:3px 4px;border-radius:8px;border:none;background:transparent;
   cursor:pointer;font-family:var(--ff);color:var(--gray5);transition:all 0.15s;
-  flex:1;
+  flex:1;min-width:0;-webkit-tap-highlight-color:transparent;
 }
 .mob-nav-btn.on{color:var(--blue);}
-.mob-nav-btn span{font-size:9px;font-weight:700;letter-spacing:0.04em;}
+.mob-nav-btn.on svg{stroke:var(--blue);}
+.mob-nav-btn span{font-size:9px;font-weight:700;letter-spacing:0.02em;white-space:nowrap;}
 
 /* ══ CATEGORIES CONFIG ══ */
 .cat-config-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
@@ -751,17 +780,18 @@ body{overflow-x:hidden;}
 .card-tile:hover .drag-handle{opacity:1;}
 @media(max-width:768px){.drag-handle{opacity:0.8;}}
 .card-move-btns{
-  position:absolute;bottom:8px;right:8px;display:flex;gap:4px;
-  opacity:0;transition:opacity 0.15s;z-index:2;
+  position:absolute;bottom:10px;right:10px;display:flex;gap:5px;
+  opacity:0;transition:opacity 0.15s;z-index:3;
 }
 .card-tile:hover .card-move-btns{opacity:1;}
-@media(max-width:768px){.card-move-btns{opacity:0.9;}}
+@media(max-width:900px){.card-move-btns{opacity:1;}}
 .card-move-btn{
-  width:22px;height:22px;border-radius:5px;border:none;cursor:pointer;
-  background:rgba(255,255,255,0.25);color:white;
-  display:flex;align-items:center;justify-content:center;font-size:12px;
+  width:26px;height:26px;border-radius:7px;border:none;cursor:pointer;
+  background:rgba(255,255,255,0.28);backdrop-filter:blur(4px);color:white;
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+  transition:background 0.12s;
 }
-.card-move-btn:hover{background:rgba(255,255,255,0.45);}
+.card-move-btn:hover{background:rgba(255,255,255,0.5);}
 </style>
 </head>
 <body>
@@ -935,31 +965,35 @@ body{overflow-x:hidden;}
         </div>
 
         <!-- Quick actions — ABOVE KPIs -->
-        <div class="quick-actions" style="margin-bottom:14px;" id="quick-actions-top">
-          <button class="qa-btn primary" onclick="openModal('modal-new-tx')" style="flex:1;">
-            <div class="qa-icon" style="background:rgba(255,255,255,0.2);">
-              <svg class="icon" viewBox="0 0 24 24" style="color:white;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </div>
-            Registrar movimiento
-          </button>
-          <button class="qa-btn" onclick="sv('activity')">
-            <div class="qa-icon" style="background:var(--blue3);">
-              <svg class="icon" viewBox="0 0 24 24" style="color:var(--blue);"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            </div>
-            Ver actividad
-          </button>
-          <button class="qa-btn" onclick="sv('terceros')">
-            <div class="qa-icon" style="background:var(--red2);">
-              <svg class="icon" viewBox="0 0 24 24" style="color:var(--red);"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-            </div>
-            Cobros
-          </button>
-          <button class="qa-btn" onclick="sv('cards')">
-            <div class="qa-icon" style="background:var(--green2);">
-              <svg class="icon" viewBox="0 0 24 24" style="color:var(--green);"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            </div>
-            Tarjetas
-          </button>
+        <div class="quick-actions" id="quick-actions-top">
+          <div class="qa-row-top">
+            <button class="qa-btn primary" onclick="openModal('modal-new-tx')" style="flex:1;width:100%;">
+              <div class="qa-icon" style="background:rgba(255,255,255,0.2);">
+                <svg class="icon" viewBox="0 0 24 24" style="color:white;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+              Registrar movimiento
+            </button>
+          </div>
+          <div class="qa-row-bottom">
+            <button class="qa-btn" onclick="sv('activity')" style="flex-direction:column;padding:12px 8px;justify-content:center;">
+              <div class="qa-icon" style="background:var(--blue3);margin-bottom:4px;">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--blue);"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <span style="font-size:11px;text-align:center;">Actividad</span>
+            </button>
+            <button class="qa-btn" onclick="sv('terceros')" style="flex-direction:column;padding:12px 8px;justify-content:center;">
+              <div class="qa-icon" style="background:var(--red2);margin-bottom:4px;">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--red);"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+              </div>
+              <span style="font-size:11px;text-align:center;">Cobros</span>
+            </button>
+            <button class="qa-btn" onclick="sv('cards')" style="flex-direction:column;padding:12px 8px;justify-content:center;">
+              <div class="qa-icon" style="background:var(--green2);margin-bottom:4px;">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--green);"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              </div>
+              <span style="font-size:11px;text-align:center;">Tarjetas</span>
+            </button>
+          </div>
         </div>
 
         <!-- Uncategorized alert -->
@@ -1286,10 +1320,32 @@ body{overflow-x:hidden;}
                     <input type="text" id="grad-b-hex" placeholder="#3B5BDB" maxlength="7" oninput="syncGradHex('b')" style="flex:1;padding:7px 10px;background:var(--gray2);border:1.5px solid transparent;border-radius:8px;font-size:12px;font-family:monospace;outline:none;">
                   </div>
                 </div>
+                <div style="margin-bottom:10px;">
+                  <div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;">Orientación</div>
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;" id="grad-direction-grid">
+                    <button onclick="setGradDir('to right')" data-dir="to right" class="grad-dir-btn" title="→" style="padding:7px 4px;border-radius:7px;border:1.5px solid var(--gray3);background:var(--gray2);cursor:pointer;font-size:14px;">→</button>
+                    <button onclick="setGradDir('to bottom')" data-dir="to bottom" class="grad-dir-btn" title="↓" style="padding:7px 4px;border-radius:7px;border:1.5px solid var(--gray3);background:var(--gray2);cursor:pointer;font-size:14px;">↓</button>
+                    <button onclick="setGradDir('135deg')" data-dir="135deg" class="grad-dir-btn grad-dir-active" title="↘" style="padding:7px 4px;border-radius:7px;border:1.5px solid var(--blue);background:var(--blue3);cursor:pointer;font-size:14px;">↘</button>
+                    <button onclick="setGradDir('to left')" data-dir="to left" class="grad-dir-btn" title="←" style="padding:7px 4px;border-radius:7px;border:1.5px solid var(--gray3);background:var(--gray2);cursor:pointer;font-size:14px;">←</button>
+                    <button onclick="setGradDir('45deg')" data-dir="45deg" class="grad-dir-btn" title="↗" style="padding:7px 4px;border-radius:7px;border:1.5px solid var(--gray3);background:var(--gray2);cursor:pointer;font-size:14px;">↗</button>
+                    <button onclick="setGradDir('to top')" data-dir="to top" class="grad-dir-btn" title="↑" style="padding:7px 4px;border-radius:7px;border:1.5px solid var(--gray3);background:var(--gray2);cursor:pointer;font-size:14px;">↑</button>
+                    <button onclick="setGradDir('225deg')" data-dir="225deg" class="grad-dir-btn" title="↙" style="padding:7px 4px;border-radius:7px;border:1.5px solid var(--gray3);background:var(--gray2);cursor:pointer;font-size:14px;">↙</button>
+                    <button onclick="setGradDir('315deg')" data-dir="315deg" class="grad-dir-btn" title="↖" style="padding:7px 4px;border-radius:7px;border:1.5px solid var(--gray3);background:var(--gray2);cursor:pointer;font-size:14px;">↖</button>
+                  </div>
+                </div>
                 <div id="grad-preview" style="height:48px;border-radius:10px;background:linear-gradient(135deg,#1A2B5F,#3B5BDB);margin-bottom:8px;"></div>
                 <button class="btn btn-primary w-full btn-sm" onclick="applyGradient()">Aplicar degradado</button>
               </div>
             </div>
+          </div>
+
+          <!-- Tipografía -->
+          <div class="settings-panel">
+            <div class="sp-title">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+              Tipografía
+            </div>
+            <div id="typo-settings"></div>
           </div>
 
           <!-- Datos -->
@@ -1342,25 +1398,25 @@ body{overflow-x:hidden;}
   <!-- MOBILE BOTTOM NAV -->
   <nav class="mobile-nav">
     <div class="mobile-nav-inner">
-    <button class="mob-nav-btn on" onclick="sv('overview',null,null,this)">
-      <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      <span>Inicio</span>
-    </button>
-    <button class="mob-nav-btn" onclick="sv('activity',null,null,this)">
-      <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      <span>Actividad</span>
-    </button>
-    <button onclick="openModal('modal-new-tx')" style="background:var(--blue);border-radius:50%;width:50px;height:50px;color:white;box-shadow:var(--sh2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:-12px;font-size:20px;font-weight:900;font-family:var(--ff);letter-spacing:-0.02em;">
-      $
-    </button>
-    <button class="mob-nav-btn" onclick="sv('terceros',null,null,this)">
-      <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      <span>Cobros</span>
-    </button>
-    <button class="mob-nav-btn" onclick="sv('settings',null,null,this)">
-      <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      <span>Ajustes</span>
-    </button>
+      <button class="mob-nav-btn on" id="mob-btn-overview" onclick="sv('overview',null,null,this)">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Inicio</span>
+      </button>
+      <button class="mob-nav-btn" id="mob-btn-activity" onclick="sv('activity',null,null,this)">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>Actividad</span>
+      </button>
+      <button class="mob-fab" onclick="openModal('modal-new-tx')" aria-label="Registrar movimiento">
+        <span style="font-size:22px;font-weight:900;line-height:1;">$</span>
+      </button>
+      <button class="mob-nav-btn" id="mob-btn-cards" onclick="sv('cards',null,null,this)">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        <span>Tarjetas</span>
+      </button>
+      <button class="mob-nav-btn" id="mob-btn-settings" onclick="sv('settings',null,null,this)">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span>Ajustes</span>
+      </button>
     </div><!-- /mobile-nav-inner -->
   </nav>
 
@@ -1372,13 +1428,13 @@ body{overflow-x:hidden;}
   <div class="modal">
     <div class="modal-title">Registrar movimiento</div>
     <div style="display:flex;gap:6px;margin-bottom:16px;">
-      <button class="btn btn-sm" id="tt-ing" onclick="st('ingreso')" style="flex:1;background:var(--green2);color:var(--green);border:1.5px solid var(--green);">
+      <button class="btn btn-sm" id="tt-gas" onclick="st('gasto')" style="flex:1;">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 19 19 12"/></svg>
+        Gasto
+      </button>
+      <button class="btn btn-sm" id="tt-ing" onclick="st('ingreso')" style="flex:1;">
         <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
         Ingreso
-      </button>
-      <button class="btn btn-sm" id="tt-gas" onclick="st('gasto')" style="flex:1;background:var(--gray2);color:var(--text3);border:1.5px solid var(--gray3);">
-        <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-        Gasto
       </button>
     </div>
     <div class="mff"><label>Descripción / establecimiento</label><input type="text" id="m-desc" placeholder="Ej: Walmart — compra semanal"></div>
@@ -2057,12 +2113,14 @@ function st(type){
     ingreso:{bg:'var(--green2)',c:'var(--green)',b:'var(--green)'},
     gasto:  {bg:'var(--red2)',  c:'var(--red)',  b:'var(--red)'}
   };
-  ['ingreso','gasto'].forEach(t=>{
+  // tt-gas = left, tt-ing = right
+  ['gasto','ingreso'].forEach(t=>{
     const btn=document.getElementById(t==='ingreso'?'tt-ing':'tt-gas');if(!btn)return;
     const s=styles[t];
+    const base='flex:1;padding:9px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--ff);display:flex;align-items:center;justify-content:center;gap:6px;border:1.5px solid;transition:all 0.15s;';
     btn.style.cssText=t===type
-      ?`flex:1;background:${s.bg};color:${s.c};border:1.5px solid ${s.b};padding:9px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--ff);display:flex;align-items:center;justify-content:center;gap:6px;`
-      :`flex:1;background:var(--gray2);color:var(--text3);border:1.5px solid var(--gray3);padding:9px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--ff);display:flex;align-items:center;justify-content:center;gap:6px;`;
+      ?base+`background:${s.bg};color:${s.c};border-color:${s.b};`
+      :base+`background:var(--gray2);color:var(--text3);border-color:var(--gray3);`;
   });
   const pw=document.getElementById('m-plat-wrap');
   const sw=document.getElementById('m-source-wrap');
@@ -3091,6 +3149,167 @@ function patchLoginHTML(){
   setTimeout(()=>st('gasto'),80);
   initFirebase();
 })();
+
+
+
+// ── GRADIENT DIRECTION ─────────────────────────────────────
+let gradDirection = '135deg';
+
+function setGradDir(dir) {
+  gradDirection = dir;
+  // Update button states
+  document.querySelectorAll('.grad-dir-btn').forEach(btn => {
+    const isActive = btn.dataset.dir === dir;
+    btn.style.borderColor   = isActive ? 'var(--blue)' : 'var(--gray3)';
+    btn.style.background    = isActive ? 'var(--blue3)' : 'var(--gray2)';
+    btn.style.color         = isActive ? 'var(--blue)'  : 'var(--text2)';
+  });
+  updateGradPreview();
+}
+
+// Override updateGradPreview to use direction
+const _origUpdateGradPreview = updateGradPreview;
+updateGradPreview = function() {
+  const a = document.getElementById('grad-a')?.value || '#1A2B5F';
+  const b = document.getElementById('grad-b')?.value || '#3B5BDB';
+  const prev = document.getElementById('grad-preview');
+  if (prev) prev.style.background = `linear-gradient(${gradDirection},${a},${b})`;
+  const ah = document.getElementById('grad-a-hex'); if(ah && ah !== document.activeElement) ah.value = a;
+  const bh = document.getElementById('grad-b-hex'); if(bh && bh !== document.activeElement) bh.value = b;
+};
+
+// Override applyGradient to use direction
+const _origApplyGradient = applyGradient;
+applyGradient = function() {
+  const a = document.getElementById('grad-a')?.value || '#1A2B5F';
+  const b = document.getElementById('grad-b')?.value || '#3B5BDB';
+  if (!confirm('¿Aplicar este degradado?')) return;
+  const gb = document.querySelector('.greeting-bar');
+  if (gb) gb.style.background = `linear-gradient(${gradDirection},${a} 0%,${b} 100%)`;
+  userData.cfg = userData.cfg || {};
+  userData.cfg.themeVars = userData.cfg.themeVars || {};
+  userData.cfg.themeVars.gradA = a;
+  userData.cfg.themeVars.gradB = b;
+  userData.cfg.themeVars.gradDir = gradDirection;
+  saveData(); toast('✓ Degradado aplicado');
+};
+
+// Also update applyThemeVars to use stored direction
+const _origApplyThemeVars = applyThemeVars;
+applyThemeVars = function(vars) {
+  if (!vars) return;
+  const r = document.documentElement.style;
+  if (vars.blue)  r.setProperty('--blue',  vars.blue);
+  if (vars.navy)  r.setProperty('--navy',  vars.navy);
+  if (vars.green) r.setProperty('--green', vars.green);
+  if (vars.red)   r.setProperty('--red',   vars.red);
+  if (vars.bg)    r.setProperty('--bg',    vars.bg);
+  if (vars.gradA && vars.gradB) {
+    const dir = vars.gradDir || '135deg';
+    const gb = document.querySelector('.greeting-bar');
+    if (gb) gb.style.background = `linear-gradient(${dir},${vars.gradA} 0%,${vars.gradB} 100%)`;
+    // restore direction button state
+    gradDirection = dir;
+    setGradDir(dir);
+  }
+};
+
+// ── TYPOGRAPHY SYSTEM ──────────────────────────────────────
+const TYPO_VARS = [
+  { id:'heading-weight', label:'Peso encabezados', varName:'--fw-heading', type:'range', min:300, max:900, step:100, default:900 },
+  { id:'body-weight',    label:'Peso cuerpo',      varName:'--fw-body',    type:'range', min:300, max:700, step:100, default:400 },
+  { id:'ui-weight',      label:'Peso UI/botones',  varName:'--fw-ui',      type:'range', min:500, max:800, step:100, default:700 },
+  { id:'base-size',      label:'Tamaño base (px)',  varName:'--fs-base',    type:'range', min:11, max:16, step:1, default:13 },
+];
+
+function renderTypoSettings() {
+  const el = document.getElementById('typo-settings'); if (!el) return;
+  const saved = userData.cfg?.typo || {};
+  el.innerHTML = TYPO_VARS.map(tv => {
+    const current = saved[tv.id] ?? tv.default;
+    return `<div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+        <span style="font-size:12px;font-weight:600;color:var(--text2);">${tv.label}</span>
+        <span style="font-size:11px;font-weight:700;color:var(--blue);" id="typo-val-${tv.id}">${current}${tv.id.includes('size')?'px':''}</span>
+      </div>
+      <input type="range" min="${tv.min}" max="${tv.max}" step="${tv.step}" value="${current}"
+        style="width:100%;accent-color:var(--blue);cursor:pointer;"
+        oninput="liveTypo('${tv.id}','${tv.varName}',this.value)">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:2px;">
+        <span>${tv.min}${tv.id.includes('size')?'px':''}</span>
+        <span>${tv.max}${tv.id.includes('size')?'px':''}</span>
+      </div>
+    </div>`;
+  }).join('') +
+  `<button class="btn btn-primary w-full btn-sm" onclick="saveTypo()">Guardar tipografía</button>
+   <button class="btn btn-secondary w-full btn-sm" style="margin-top:6px;" onclick="resetTypo()">Restablecer</button>`;
+}
+
+function liveTypo(id, varName, val) {
+  const numVal = parseInt(val);
+  const cssVal = id.includes('size') ? numVal + 'px' : String(numVal);
+  document.documentElement.style.setProperty(varName, cssVal);
+  const disp = document.getElementById('typo-val-' + id);
+  if (disp) disp.textContent = cssVal;
+  userData.cfg = userData.cfg || {};
+  userData.cfg.typo = userData.cfg.typo || {};
+  userData.cfg.typo[id] = numVal;
+}
+
+function applyTypo(typo) {
+  if (!typo) return;
+  TYPO_VARS.forEach(tv => {
+    const val = typo[tv.id];
+    if (val !== undefined) {
+      const cssVal = tv.id.includes('size') ? val + 'px' : String(val);
+      document.documentElement.style.setProperty(tv.varName, cssVal);
+    }
+  });
+}
+
+function saveTypo() {
+  saveData(); toast('✓ Tipografía guardada');
+}
+function resetTypo() {
+  userData.cfg = userData.cfg || {};
+  userData.cfg.typo = {};
+  TYPO_VARS.forEach(tv => {
+    const cssVal = tv.id.includes('size') ? tv.default + 'px' : String(tv.default);
+    document.documentElement.style.setProperty(tv.varName, cssVal);
+  });
+  saveData(); renderTypoSettings(); toast('Tipografía restablecida');
+}
+
+// Patch renderAll to include typo
+const _origRenderAll = renderAll;
+renderAll = function() {
+  _origRenderAll();
+  renderTypoSettings();
+};
+
+// Patch applyUserUI to load typo and gradient
+const _origApplyUserUI = applyUserUI;
+applyUserUI = function() {
+  _origApplyUserUI();
+  if (userData?.cfg?.typo) applyTypo(userData.cfg.typo);
+  // Restore gradient direction button
+  if (userData?.cfg?.themeVars?.gradDir) {
+    gradDirection = userData.cfg.themeVars.gradDir;
+    setTimeout(() => setGradDir(gradDirection), 100);
+  }
+};
+
+// ── SCROLLABLE MONTH SELECTOR ─────────────────────────────
+// Add touch scroll to movements list on mobile
+document.addEventListener('DOMContentLoaded', () => {
+  // Make month selector show current
+  const mesGl = document.getElementById('mes-gl');
+  if (mesGl) {
+    mesGl.addEventListener('change', () => {
+      renderAll();
+    });
+  }
+});
 
 </script>
 </body>
